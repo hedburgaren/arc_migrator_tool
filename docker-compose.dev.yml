@@ -16,6 +16,7 @@ services:
       - UPLOAD_DIR=./data/uploads
       - OUTPUT_DIR=./data/outputs
       - DEBUG=true
+      - CORS_ORIGINS=["http://localhost:5173","http://localhost:3000"]
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]

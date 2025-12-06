@@ -154,12 +154,42 @@ class MappingEngine:
             return TransformFunctions.lookup(value, lookup_table, default)
         
         if transform_type == TransformType.CUSTOM:
-            # Custom transform using expression (basic evaluation)
+            # Custom transform using safe expression evaluation
+            # Only supports basic operations: string operations and type conversions
             expression = config.get('expression', '')
-            if expression:
+            if expression and value is not None:
                 try:
-                    # Safe eval with limited context
-                    return eval(expression, {"__builtins__": {}}, {"value": value, "str": str, "int": int, "float": float})
+                    # Safe string-based transformations only
+                    str_value = str(value)
+                    if expression == 'upper':
+                        return str_value.upper()
+                    elif expression == 'lower':
+                        return str_value.lower()
+                    elif expression == 'strip':
+                        return str_value.strip()
+                    elif expression == 'title':
+                        return str_value.title()
+                    elif expression.startswith('prefix:'):
+                        prefix = expression[7:]
+                        return prefix + str_value
+                    elif expression.startswith('suffix:'):
+                        suffix = expression[7:]
+                        return str_value + suffix
+                    elif expression.startswith('replace:'):
+                        # Format: replace:old:new
+                        parts = expression[8:].split(':')
+                        if len(parts) >= 2:
+                            return str_value.replace(parts[0], parts[1])
+                    elif expression.startswith('slice:'):
+                        # Format: slice:start:end
+                        parts = expression[6:].split(':')
+                        if len(parts) >= 2:
+                            start = int(parts[0]) if parts[0] else None
+                            end = int(parts[1]) if parts[1] else None
+                            return str_value[start:end]
+                    # If no matching expression, return original value
+                    logger.warning(f"Unknown custom expression: {expression}")
+                    return value
                 except Exception as e:
                     logger.warning(f"Custom transform failed: {e}")
                     return value

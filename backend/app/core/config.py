@@ -19,8 +19,10 @@ class Settings(BaseSettings):
     OUTPUT_DIR: str = "./data/outputs"
     MAX_UPLOAD_SIZE: int = 100 * 1024 * 1024  # 100MB
     
-    # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"]
+    # CORS - Default to empty list for production security
+    # Set via environment variable: CORS_ORIGINS='["http://localhost:3000"]'
+    # In Docker, frontend requests are proxied through nginx, so CORS isn't needed
+    CORS_ORIGINS: List[str] = []
     
     # Preview settings
     DEFAULT_PREVIEW_ROWS: int = 100
