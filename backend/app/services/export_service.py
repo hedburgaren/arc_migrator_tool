@@ -79,16 +79,18 @@ class ExportService:
         options: Optional[Dict[str, Any]] = None
     ) -> str:
         """
-        Generate XLSX file from DataFrame.
+        Generate XLSX file from DataFrame using enhanced ExcelService.
         
         Args:
             data: DataFrame to export
             filename: Optional custom filename (without extension)
-            options: Export options (sheet_name, etc.)
+            options: Export options (sheet_name, formatting, etc.)
             
         Returns:
             Path to generated XLSX file
         """
+        from app.services.excel_service import ExcelService
+        
         options = options or {}
         
         # Generate filename if not provided
@@ -103,16 +105,24 @@ class ExportService:
         
         # Get export options
         sheet_name = options.get('sheet_name', 'Sheet1')
-        index = options.get('include_index', False)
+        
+        # Extract formatting options
+        formatting = {
+            'include_index': options.get('include_index', False),
+            'auto_filter': options.get('auto_filter', True),
+            'freeze_panes': options.get('freeze_panes', 'A2'),  # Freeze header row by default
+            'auto_width': options.get('auto_width', True)
+        }
         
         try:
-            # Export to Excel
-            with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
-                data.to_excel(
-                    writer,
-                    sheet_name=sheet_name,
-                    index=index
-                )
+            # Use ExcelService for advanced formatting
+            excel_service = ExcelService()
+            excel_service.write_excel_file(
+                data,
+                file_path,
+                sheet_name=sheet_name,
+                formatting=formatting
+            )
             
             logger.info(f"Generated XLSX export: {file_path}")
             return file_path
