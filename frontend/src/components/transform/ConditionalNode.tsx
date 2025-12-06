@@ -2,7 +2,7 @@
  * Conditional Transform Node Component
  * Applies if-then-else logic to transform data
  */
-import { memo, useState } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import './TransformNode.css';
 
@@ -28,6 +28,18 @@ function ConditionalNode({ data, selected }: NodeProps<ConditionalNodeData>) {
   const [conditions, setConditions] = useState<Condition[]>(data.config?.conditions || []);
   const [defaultValue, setDefaultValue] = useState(data.config?.default_value || '');
 
+  // Debounced config change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      data.onConfigChange?.({
+        conditions,
+        default_value: defaultValue
+      });
+    }, 500); // Debounce for 500ms
+    
+    return () => clearTimeout(timer);
+  }, [conditions, defaultValue, data]);
+
   const operators = [
     { value: '==', label: 'Equals' },
     { value: '!=', label: 'Not Equals' },
@@ -43,37 +55,21 @@ function ConditionalNode({ data, selected }: NodeProps<ConditionalNodeData>) {
   const handleAddCondition = () => {
     const updated = [...conditions, { operator: '==', value: '', then_value: '' }];
     setConditions(updated);
-    data.onConfigChange?.({
-      conditions: updated,
-      default_value: defaultValue
-    });
   };
 
   const handleUpdateCondition = (index: number, field: keyof Condition, value: string) => {
     const updated = [...conditions];
     updated[index] = { ...updated[index], [field]: value };
     setConditions(updated);
-    data.onConfigChange?.({
-      conditions: updated,
-      default_value: defaultValue
-    });
   };
 
   const handleRemoveCondition = (index: number) => {
     const updated = conditions.filter((_, i) => i !== index);
     setConditions(updated);
-    data.onConfigChange?.({
-      conditions: updated,
-      default_value: defaultValue
-    });
   };
 
   const handleDefaultValueChange = (value: string) => {
     setDefaultValue(value);
-    data.onConfigChange?.({
-      conditions,
-      default_value: value
-    });
   };
 
   return (

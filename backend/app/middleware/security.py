@@ -151,26 +151,29 @@ def sanitize_filename(filename: str) -> str:
     return filename
 
 
-def validate_file_content(file_path: str, allowed_types: list) -> bool:
+def validate_file_content(file_path: str, allowed_types: list, max_size: int = None) -> bool:
     """
     Validate file content using magic numbers (file signatures).
     
     Args:
         file_path: Path to file
         allowed_types: List of allowed file extensions
+        max_size: Maximum file size in bytes (defaults to settings.MAX_UPLOAD_SIZE)
         
     Returns:
         True if file is valid, False otherwise
     """
     import os
+    from app.core.config import settings
     
     # Check file extension
     file_ext = os.path.splitext(file_path)[1].lower()
     if file_ext not in allowed_types:
         return False
     
-    # Check file size (max 100MB)
-    max_size = 100 * 1024 * 1024
+    # Check file size using settings or provided max_size
+    if max_size is None:
+        max_size = settings.MAX_UPLOAD_SIZE
     if os.path.getsize(file_path) > max_size:
         return False
     

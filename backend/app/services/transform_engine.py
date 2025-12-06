@@ -4,6 +4,7 @@ Transform engine for applying field mappings and transforming data.
 import logging
 from typing import Dict, List, Any, Optional, Tuple
 import pandas as pd
+import numpy as np
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -462,10 +463,8 @@ class TransformEngine:
             elif operation == "abs":
                 result = series.abs()
             elif operation == "ceil":
-                import numpy as np
                 result = series.apply(lambda x: np.ceil(x) if pd.notna(x) else x)
             elif operation == "floor":
-                import numpy as np
                 result = series.apply(lambda x: np.floor(x) if pd.notna(x) else x)
             else:
                 result = series

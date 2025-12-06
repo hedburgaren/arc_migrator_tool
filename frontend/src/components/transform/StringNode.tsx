@@ -2,7 +2,7 @@
  * String Transform Node Component
  * Handles string manipulation operations
  */
-import { memo, useState } from 'react';
+import { memo, useState, useEffect, useCallback } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import './TransformNode.css';
 
@@ -48,22 +48,27 @@ function StringNode({ data, selected }: NodeProps<StringNodeData>) {
     { value: 'normalize_whitespace', label: 'Normalize Whitespace' },
   ];
 
-  const handleConfigChange = () => {
-    const config: StringConfig = { operation };
+  // Debounced config change with useEffect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const config: StringConfig = { operation };
+      
+      if (operation === 'replace') {
+        config.old = oldValue;
+        config.new = newValue;
+      } else if (operation === 'substring') {
+        config.start = start;
+        config.length = length;
+      } else if (['pad_left', 'pad_right'].includes(operation)) {
+        config.width = width;
+        config.fill_char = fillChar;
+      }
+      
+      data.onConfigChange?.(config);
+    }, 500); // Debounce for 500ms
     
-    if (operation === 'replace') {
-      config.old = oldValue;
-      config.new = newValue;
-    } else if (operation === 'substring') {
-      config.start = start;
-      config.length = length;
-    } else if (['pad_left', 'pad_right'].includes(operation)) {
-      config.width = width;
-      config.fill_char = fillChar;
-    }
-    
-    data.onConfigChange?.(config);
-  };
+    return () => clearTimeout(timer);
+  }, [operation, oldValue, newValue, start, length, width, fillChar, data]);
 
   return (
     <div className={`transform-node string-node ${selected ? 'selected' : ''}`}>
@@ -88,10 +93,7 @@ function StringNode({ data, selected }: NodeProps<StringNodeData>) {
               <label>Operation</label>
               <select
                 value={operation}
-                onChange={(e) => {
-                  setOperation(e.target.value);
-                  handleConfigChange();
-                }}
+                onChange={(e) => setOperation(e.target.value)}
               >
                 {operations.map(op => (
                   <option key={op.value} value={op.value}>{op.label}</option>
@@ -106,10 +108,7 @@ function StringNode({ data, selected }: NodeProps<StringNodeData>) {
                   <input
                     type="text"
                     value={oldValue}
-                    onChange={(e) => {
-                      setOldValue(e.target.value);
-                      handleConfigChange();
-                    }}
+                    onChange={(e) => setOldValue(e.target.value)}
                   />
                 </div>
                 <div className="config-section">
@@ -117,10 +116,7 @@ function StringNode({ data, selected }: NodeProps<StringNodeData>) {
                   <input
                     type="text"
                     value={newValue}
-                    onChange={(e) => {
-                      setNewValue(e.target.value);
-                      handleConfigChange();
-                    }}
+                    onChange={(e) => setNewValue(e.target.value)}
                   />
                 </div>
               </>
@@ -133,10 +129,7 @@ function StringNode({ data, selected }: NodeProps<StringNodeData>) {
                   <input
                     type="number"
                     value={start}
-                    onChange={(e) => {
-                      setStart(Number(e.target.value));
-                      handleConfigChange();
-                    }}
+                    onChange={(e) => setStart(Number(e.target.value))}
                   />
                 </div>
                 <div className="config-section">
@@ -144,10 +137,7 @@ function StringNode({ data, selected }: NodeProps<StringNodeData>) {
                   <input
                     type="number"
                     value={length}
-                    onChange={(e) => {
-                      setLength(Number(e.target.value));
-                      handleConfigChange();
-                    }}
+                    onChange={(e) => setLength(Number(e.target.value))}
                   />
                 </div>
               </>
@@ -160,10 +150,7 @@ function StringNode({ data, selected }: NodeProps<StringNodeData>) {
                   <input
                     type="number"
                     value={width}
-                    onChange={(e) => {
-                      setWidth(Number(e.target.value));
-                      handleConfigChange();
-                    }}
+                    onChange={(e) => setWidth(Number(e.target.value))}
                   />
                 </div>
                 <div className="config-section">
@@ -172,10 +159,7 @@ function StringNode({ data, selected }: NodeProps<StringNodeData>) {
                     type="text"
                     maxLength={1}
                     value={fillChar}
-                    onChange={(e) => {
-                      setFillChar(e.target.value);
-                      handleConfigChange();
-                    }}
+                    onChange={(e) => setFillChar(e.target.value)}
                   />
                 </div>
               </>

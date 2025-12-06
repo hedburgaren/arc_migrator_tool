@@ -51,7 +51,13 @@ class ExcelService:
                     'is_visible': sheet.sheet_state == 'visible'
                 })
             
-            workbook.close()
+            # Close workbook safely
+            try:
+                if hasattr(workbook, 'close'):
+                    workbook.close()
+            except:
+                pass
+            
             return sheet_info
             
         except Exception as e:
