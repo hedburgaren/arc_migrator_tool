@@ -5,6 +5,25 @@ import { FileMetadata, FileUploadResponse } from '../types/file';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+export interface ProjectCreate {
+  name: string;
+  description?: string;
+  source_system?: string;
+  target_system?: string;
+  status?: 'draft' | 'active' | 'completed' | 'archived';
+}
+
+export interface ProjectResponse {
+  id: number;
+  name: string;
+  description: string | null;
+  source_system: string | null;
+  target_system: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 /**
  * Upload a file to the server
  */
@@ -129,6 +148,56 @@ export async function getFileSchema(fileId: number): Promise<import('../types/sc
     } catch (e) {
       throw new Error('Failed to fetch schema');
     }
+  }
+
+  return response.json();
+}
+
+/**
+ * Create a new project
+ */
+export async function createProject(project: ProjectCreate): Promise<ProjectResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/projects`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(project),
+  });
+
+  if (!response.ok) {
+    try {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to create project');
+    } catch (e) {
+      throw new Error('Failed to create project');
+    }
+  }
+
+  return response.json();
+}
+
+/**
+ * Get list of all projects
+ */
+export async function listProjects(): Promise<ProjectResponse[]> {
+  const response = await fetch(`${API_BASE_URL}/api/projects`);
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch projects');
+  }
+
+  return response.json();
+}
+
+/**
+ * Get a specific project
+ */
+export async function getProject(projectId: number): Promise<ProjectResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`);
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch project');
   }
 
   return response.json();

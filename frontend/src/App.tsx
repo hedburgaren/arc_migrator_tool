@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import FileUpload from './components/FileUpload'
 import FileList from './components/FileList'
+import ProjectManager from './components/ProjectManager'
 import { listFiles } from './services/api'
 import { FileMetadata } from './types/file'
 
@@ -49,6 +50,12 @@ function App() {
             )}
             {!loading && !error && (
               <FileList files={files} onFileDeleted={loadFiles} />
+            )}
+          </section>
+
+          <section className="projects-section">
+            {!loading && !error && (
+              <ProjectManager files={files} />
             )}
           </section>
         </div>
