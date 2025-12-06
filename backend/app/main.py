@@ -4,7 +4,7 @@ Main FastAPI application entry point for ARC Migrator Tool.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, files, schemas, projects, mappings, executions
+from app.api import health, files, schemas, projects, mappings, executions, transform, exports, validation
 from app.core.config import settings
 from app.core.database import init_db
 
@@ -31,6 +31,9 @@ app.include_router(schemas.router, prefix="/api/files", tags=["schemas"])
 app.include_router(projects.router, prefix="/api/projects", tags=["projects"])
 app.include_router(mappings.router, prefix="/api", tags=["mappings"])
 app.include_router(executions.router, prefix="/api", tags=["executions"])
+app.include_router(transform.router, prefix="/api", tags=["transform"])
+app.include_router(exports.router, prefix="/api", tags=["exports"])
+app.include_router(validation.router, prefix="/api", tags=["validation"])
 
 
 @app.on_event("startup")
