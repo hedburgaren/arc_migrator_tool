@@ -194,3 +194,109 @@ async def delete_file(file_id: int, db: Session = Depends(get_db)):
     # Delete database record
     db.delete(db_file)
     db.commit()
+
+
+@router.get("/{file_id}/sheets")
+async def get_file_sheets(file_id: int, db: Session = Depends(get_db)):
+    """
+    Get sheet information for an Excel file.
+    
+    Args:
+        file_id: File ID
+        db: Database session
+        
+    Returns:
+        Dictionary with sheet information
+    """
+    from app.services.excel_service import ExcelService
+    
+    db_file = db.query(File).filter(File.id == file_id).first()
+    
+    if not db_file:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"File with id {file_id} not found"
+        )
+    
+    # Check if file is Excel
+    file_ext = os.path.splitext(db_file.file_path)[1].lower()
+    if file_ext not in ['.xlsx', '.xls']:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File is not an Excel file"
+        )
+    
+    # Check if file exists
+    if not os.path.exists(db_file.file_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found on disk"
+        )
+    
+    try:
+        excel_service = ExcelService()
+        sheet_info = excel_service.get_sheet_info(db_file.file_path)
+        
+        return {
+            'file_id': file_id,
+            'filename': db_file.filename,
+            'sheets': sheet_info
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get sheet information: {str(e)}"
+        )
+
+
+@router.get("/{file_id}/excel-metadata")
+async def get_excel_metadata(file_id: int, db: Session = Depends(get_db)):
+    """
+    Get comprehensive Excel metadata including formulas, charts, etc.
+    
+    Args:
+        file_id: File ID
+        db: Database session
+        
+    Returns:
+        Dictionary with Excel metadata
+    """
+    from app.services.excel_service import ExcelService
+    
+    db_file = db.query(File).filter(File.id == file_id).first()
+    
+    if not db_file:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"File with id {file_id} not found"
+        )
+    
+    # Check if file is Excel
+    file_ext = os.path.splitext(db_file.file_path)[1].lower()
+    if file_ext not in ['.xlsx', '.xls']:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File is not an Excel file"
+        )
+    
+    # Check if file exists
+    if not os.path.exists(db_file.file_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found on disk"
+        )
+    
+    try:
+        excel_service = ExcelService()
+        metadata = excel_service.extract_excel_metadata(db_file.file_path)
+        
+        return {
+            'file_id': file_id,
+            'filename': db_file.filename,
+            'metadata': metadata
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get Excel metadata: {str(e)}"
+        )

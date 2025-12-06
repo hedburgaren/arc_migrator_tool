@@ -26,7 +26,7 @@ async def analyze_file_schema(
     
     Args:
         file_id: File ID to analyze
-        request: Analysis configuration
+        request: Analysis configuration (can include sheet_name or sheet_index for Excel)
         db: Database session
         
     Returns:
@@ -54,9 +54,15 @@ async def analyze_file_schema(
         db_file.status = "processing"
         db.commit()
         
-        # Analyze file
+        # Analyze file with optional sheet selection
         analyzer = SchemaAnalyzer(sample_size=request.sample_size)
-        analysis_result = analyzer.analyze_file(db_file.file_path)
+        sheet_name = getattr(request, 'sheet_name', None)
+        sheet_index = getattr(request, 'sheet_index', None)
+        analysis_result = analyzer.analyze_file(
+            db_file.file_path,
+            sheet_name=sheet_name,
+            sheet_index=sheet_index
+        )
         
         # Delete existing schema entries for this file
         db.query(Schema).filter(Schema.file_id == file_id).delete()
@@ -86,12 +92,18 @@ async def analyze_file_schema(
         
         logger.info(f"Successfully analyzed file {file_id}: {db_file.filename}")
         
-        return {
+        result = {
             "message": "Schema analysis completed successfully",
             "file_id": file_id,
             "row_count": analysis_result['row_count'],
             "column_count": analysis_result['column_count']
         }
+        
+        # Add Excel metadata if available
+        if 'excel_metadata' in analysis_result:
+            result['excel_metadata'] = analysis_result['excel_metadata']
+        
+        return result
         
     except Exception as e:
         db_file.status = "error"

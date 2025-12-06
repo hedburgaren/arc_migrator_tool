@@ -52,13 +52,21 @@ class SchemaAnalyzer:
             logger.warning(f"Encoding detection failed: {e}, using utf-8")
             return 'utf-8'
     
-    def read_file(self, file_path: str, encoding: Optional[str] = None) -> Tuple[pd.DataFrame, str]:
+    def read_file(
+        self,
+        file_path: str,
+        encoding: Optional[str] = None,
+        sheet_name: Optional[str] = None,
+        sheet_index: Optional[int] = None
+    ) -> Tuple[pd.DataFrame, str]:
         """
         Read CSV or XLSX file into DataFrame.
         
         Args:
             file_path: Path to the file
             encoding: Optional encoding (will be detected if not provided)
+            sheet_name: Optional sheet name for Excel files
+            sheet_index: Optional sheet index for Excel files
             
         Returns:
             Tuple of (DataFrame, detected_encoding)
@@ -86,8 +94,12 @@ class SchemaAnalyzer:
                 raise ValueError(f"Could not read CSV file with any supported encoding")
         
         elif file_ext in ['.xlsx', '.xls']:
-            # Excel files don't need encoding
-            df = pd.read_excel(file_path)
+            # Import ExcelService for multi-sheet support
+            from app.services.excel_service import ExcelService
+            excel_service = ExcelService()
+            
+            # Use ExcelService for advanced multi-sheet support
+            df, metadata = excel_service.read_excel_file(file_path, sheet_name, sheet_index)
             return df, 'n/a'
         
         else:
@@ -250,25 +262,47 @@ class SchemaAnalyzer:
         
         return columns_metadata
     
-    def analyze_file(self, file_path: str) -> Dict[str, Any]:
+    def analyze_file(
+        self,
+        file_path: str,
+        sheet_name: Optional[str] = None,
+        sheet_index: Optional[int] = None
+    ) -> Dict[str, Any]:
         """
         Analyze a file and return complete schema information.
         
         Args:
             file_path: Path to the file to analyze
+            sheet_name: Optional sheet name for Excel files
+            sheet_index: Optional sheet index for Excel files
             
         Returns:
             Dictionary with schema information
         """
+        # Check if Excel file for metadata
+        file_ext = os.path.splitext(file_path)[1].lower()
+        excel_metadata = None
+        
+        if file_ext in ['.xlsx', '.xls']:
+            from app.services.excel_service import ExcelService
+            excel_service = ExcelService()
+            excel_metadata = excel_service.extract_excel_metadata(file_path)
+        
         # Read file
-        df, encoding = self.read_file(file_path)
+        df, encoding = self.read_file(file_path, sheet_name=sheet_name, sheet_index=sheet_index)
         
         # Analyze columns
         columns_metadata = self.analyze_dataframe(df)
         
-        return {
+        result = {
             'row_count': len(df),
             'column_count': len(df.columns),
             'encoding': encoding,
             'columns': columns_metadata
         }
+        
+        # Add Excel metadata if available
+        if excel_metadata:
+            result['excel_metadata'] = excel_metadata
+        
+        return result

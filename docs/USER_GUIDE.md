@@ -76,13 +76,39 @@ After upload, ARC Migrator automatically detects:
 - **Column Count** - Number of fields
 - **Data Types** - String, number, date, boolean
 
-### Excel Sheets
+### Excel Multi-Sheet Support
+
+**NEW**: Enhanced Excel file handling with multi-sheet support!
 
 For Excel files with multiple sheets:
-1. Click on the uploaded file
-2. Select **Show Sheets**
-3. Choose the sheet to import
-4. The data from that sheet will be analyzed
+
+1. **Upload the Excel file** - All sheets are detected automatically
+2. **View sheet information**:
+   ```bash
+   GET /api/files/{file_id}/sheets
+   ```
+   Returns:
+   - Sheet names
+   - Row and column counts per sheet
+   - Sheet visibility status
+
+3. **Select a sheet for analysis**:
+   - In the Files tab, click on the uploaded Excel file
+   - Click **Show Sheets** to view all available sheets
+   - Select the sheet you want to analyze
+   - The schema will be analyzed for the selected sheet
+
+4. **Excel metadata**:
+   - View formulas, charts, and pivot tables
+   - See document properties (creator, modified date, etc.)
+   - Access via `/api/files/{file_id}/excel-metadata`
+
+**Excel Features Preserved**:
+- Cell formatting (when exporting)
+- Multiple data types (numbers, dates, formulas)
+- Column width auto-adjustment
+- Header row freezing
+- Auto-filters on export
 
 ## Step 3: Discover Schemas
 
@@ -170,21 +196,113 @@ Map source values to target values:
 - Configure lookup table
 - Example: Map "M"/"F" to "Male"/"Female"
 
-### Available Transforms
+### Advanced Transform Nodes
+
+**NEW**: Visual transform nodes for complex data transformations!
+
+#### Lookup Transform 🔍
+Map source values to target values using a lookup table.
+
+**Use Case**: Convert codes to descriptions (e.g., "M" → "Male", "F" → "Female")
+
+**Configuration**:
+- Add source-target value pairs
+- Set default value for unmapped items
+- Supports unlimited mappings
+
+#### Conditional Transform ⚡
+Apply if-then-else logic to transform data.
+
+**Use Case**: Categorize data based on conditions
+
+**Configuration**:
+- Multiple conditions with operators (==, !=, >, <, contains, etc.)
+- Then-value for each condition
+- Default value for unmatched conditions
+
+**Example**:
+```
+If value > 100 then "High"
+If value > 50 then "Medium"
+Else "Low"
+```
+
+#### Math Transform 🔢
+Perform mathematical operations on numeric data.
+
+**Operations**:
+- **Single field**: Add, Subtract, Multiply, Divide, Round, Absolute, Ceiling, Floor
+- **Multiple fields**: Sum, Average, Min, Max
+
+**Use Case**: Calculate totals, percentages, or apply formulas
+
+#### Date Transform 📅
+Parse, format, and manipulate dates.
+
+**Operations**:
+- Format dates (various formats supported)
+- Extract year, month, day, or day of week
+- Add/subtract days or months
+
+**Use Case**: Standardize date formats, extract date components
+
+**Common Formats**:
+- YYYY-MM-DD (2024-01-15)
+- DD/MM/YYYY (15/01/2024)
+- MM/DD/YYYY (01/15/2024)
+- Month DD, YYYY (January 15, 2024)
+
+#### String Transform 📝
+Advanced string manipulation operations.
+
+**Operations**:
+- Case conversion (lowercase, uppercase, title case)
+- Trimming (trim, ltrim, rtrim)
+- Find and replace
+- Substring extraction
+- Padding (left/right with fill character)
+- Remove special characters or whitespace
+- Normalize whitespace
+
+**Use Case**: Clean and standardize text data
+
+#### Custom Transform ⚙️
+Placeholder for user-defined transformations (coming soon).
+
+### Using Transform Nodes
+
+1. **Add a transform node**:
+   - Drag from the transform library
+   - Or right-click in workspace → Add Transform
+
+2. **Configure the transform**:
+   - Click on the node
+   - Click "Configure" button
+   - Set parameters based on transform type
+
+3. **Connect nodes**:
+   - Connect source field → transform node
+   - Connect transform node → target field
+   - Chain multiple transforms if needed
+
+4. **Test the transformation**:
+   - Use Preview mode to see results
+   - Adjust configuration as needed
+
+### Available Transforms (Legacy)
 
 | Transform | Description | Configuration |
 |-----------|-------------|---------------|
-| none | No transformation | - |
-| lowercase | Convert to lowercase | - |
-| uppercase | Convert to uppercase | - |
-| trim | Remove whitespace | - |
-| concat | Join fields | separator |
+| 1:1 | Direct mapping | - |
+| constant | Fixed value | value |
+| concat | Join fields | separator, fields |
 | split | Split by delimiter | separator, index |
-| replace | Find and replace | old, new |
-| format_date | Format dates | output format |
-| to_number | Convert to number | default value |
-| to_string | Convert to string | - |
 | lookup | Value mapping | lookup table |
+| conditional | If-then-else | conditions |
+| math | Calculations | operation, operand |
+| date | Date operations | format, operation |
+| string | String manipulation | operation |
+| custom | User-defined | function code |
 
 ### Saving Mappings
 
@@ -321,6 +439,136 @@ Files are stored in the configured output directory.
 1. Check the [Architecture Guide](ARCHITECTURE.md) for technical details
 2. Review execution logs for specific error messages
 3. Use Preview mode to debug mapping issues
+4. Check logs in `backend/data/logs/` for detailed error information
+
+## Best Practices
+
+### Data Preparation
+
+1. **Clean source data before migration**:
+   - Remove duplicate records
+   - Fix data quality issues at the source
+   - Standardize formats when possible
+
+2. **Use consistent encoding**:
+   - UTF-8 is recommended
+   - Check file encoding before upload
+   - Use the encoding detection feature
+
+3. **Optimize Excel files**:
+   - Remove unnecessary sheets
+   - Convert formulas to values if needed
+   - Keep file sizes under 100MB
+
+### Mapping Strategy
+
+1. **Start simple**:
+   - Begin with direct 1:1 mappings
+   - Add transforms gradually
+   - Test each transformation
+
+2. **Use transform nodes effectively**:
+   - Chain transforms for complex logic
+   - Use lookup nodes for code conversions
+   - Apply conditional nodes for categorization
+
+3. **Handle null values**:
+   - Configure null handling in transforms
+   - Use default values in lookup nodes
+   - Test with null data in preview
+
+### Performance Optimization
+
+1. **Process data in batches**:
+   - Split large files if possible
+   - Use preview mode for testing
+   - Monitor execution times
+
+2. **Optimize mappings**:
+   - Minimize nested transforms
+   - Use efficient transform types
+   - Test performance with large datasets
+
+3. **Monitor resource usage**:
+   - Check metrics endpoint
+   - Review logs for performance issues
+   - Adjust system resources if needed
+
+### Security and Compliance
+
+1. **Protect sensitive data**:
+   - Be cautious with personally identifiable information
+   - Review data before committing
+   - Use secure connections in production
+
+2. **Audit trail**:
+   - Review audit logs regularly
+   - Document migration processes
+   - Keep backup copies of original data
+
+3. **Rate limiting**:
+   - Respect API rate limits
+   - Batch operations when possible
+   - Monitor rate limit headers
+
+### Troubleshooting
+
+1. **Schema analysis fails**:
+   - Check file encoding
+   - Verify file format (CSV/Excel)
+   - Review file for corruption
+
+2. **Transform errors**:
+   - Check data types match operation
+   - Verify source field names
+   - Test with sample data
+
+3. **Performance issues**:
+   - Reduce preview row count
+   - Simplify transform chains
+   - Check system resources
+
+4. **Excel issues**:
+   - Select specific sheet if multiple exist
+   - Convert formulas to values if needed
+   - Check for hidden sheets
+
+## Advanced Features
+
+### Excel Export with Formatting
+
+When exporting to Excel, the system automatically:
+- Adjusts column widths
+- Freezes header row
+- Applies auto-filters
+- Preserves data types
+
+Customize export options:
+```python
+{
+  "format": "xlsx",
+  "options": {
+    "sheet_name": "Migration Results",
+    "auto_filter": true,
+    "freeze_panes": "A2",
+    "auto_width": true
+  }
+}
+```
+
+### Transform Node Chaining
+
+Combine multiple transforms for complex logic:
+```
+Source Field → String (trim) → Conditional (categorize) → Lookup (map) → Target Field
+```
+
+### Custom Validation Rules
+
+Use conditional transforms for validation:
+- Check required fields
+- Validate data ranges
+- Ensure format compliance
 
 ## Keyboard Shortcuts
 
@@ -336,3 +584,5 @@ Files are stored in the configured output directory.
 For programmatic access, see the API documentation:
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
+- **Metrics**: http://localhost:8000/metrics
+- **Health Check**: http://localhost:8000/health
