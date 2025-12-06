@@ -1,1 +1,1 @@
-# ARC Migrator Tool Backend
+# Backend application package

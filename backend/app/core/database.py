@@ -1,48 +1,42 @@
-"""Database configuration and session management."""
-
-from pathlib import Path
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase
+"""
+Database setup and session management.
+"""
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 
+# Ensure data directory exists
+os.makedirs("./data", exist_ok=True)
 
-class Base(DeclarativeBase):
-    """SQLAlchemy declarative base."""
-    pass
-
-
-# Create async engine
-engine = create_async_engine(
+# Create SQLAlchemy engine
+engine = create_engine(
     settings.DATABASE_URL,
-    echo=settings.DEBUG,
+    connect_args={"check_same_thread": False}  # Needed for SQLite
 )
 
-# Session factory
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-)
+# Create SessionLocal class
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Create Base class for models
+Base = declarative_base()
 
 
-async def get_db():
-    """Dependency for getting database sessions."""
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
-
-
-async def init_db():
-    """Initialize the database by creating all tables."""
-    # Ensure database directory exists
-    db_path = settings.DATABASE_URL.replace("sqlite+aiosqlite:///", "")
-    Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+def init_db():
+    """Initialize database tables."""
+    # Import models here to avoid circular imports
+    # from app.models import user, migration
     
-    # Import models to ensure they're registered
-    from app.models import project, file, schema, mapping, execution  # noqa: F401
-    
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Create all tables
+    Base.metadata.create_all(bind=engine)
+
+
+def get_db():
+    """Dependency to get database session."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
