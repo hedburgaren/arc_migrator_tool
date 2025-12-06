@@ -4,3 +4,6 @@ pydantic==2.5.0
 pydantic-settings==2.1.0
 sqlalchemy==2.0.23
 python-multipart==0.0.6
+pandas==2.1.4
+openpyxl==3.1.2
+chardet==5.2.0

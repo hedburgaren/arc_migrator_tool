@@ -2,7 +2,8 @@
 File model for storing uploaded file metadata.
 """
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, BigInteger
+from sqlalchemy import Column, Integer, String, DateTime, BigInteger, Boolean
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 
@@ -18,6 +19,15 @@ class File(Base):
     file_type = Column(String, nullable=False)
     upload_timestamp = Column(DateTime, default=lambda: datetime.utcnow(), nullable=False)
     status = Column(String, default="uploaded", nullable=False)  # uploaded, processing, error
+    
+    # Schema analysis fields
+    schema_analyzed = Column(Boolean, default=False, nullable=False)
+    column_count = Column(Integer, nullable=True)
+    row_count = Column(Integer, nullable=True)
+    encoding = Column(String, nullable=True)
+    
+    # Relationship to schema
+    schemas = relationship("Schema", back_populates="file", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<File(id={self.id}, filename='{self.filename}', status='{self.status}')>"

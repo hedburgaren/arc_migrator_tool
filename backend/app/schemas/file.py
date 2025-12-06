@@ -15,6 +15,10 @@ class FileResponse(BaseModel):
     file_type: str
     upload_timestamp: datetime
     status: str
+    schema_analyzed: bool = False
+    column_count: int | None = None
+    row_count: int | None = None
+    encoding: str | None = None
     
     class Config:
         from_attributes = True
