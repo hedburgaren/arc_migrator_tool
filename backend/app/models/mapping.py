@@ -12,7 +12,7 @@ class Mapping(Base):
     
     __tablename__ = "mappings"
     __table_args__ = (
-        UniqueConstraint('project_id', 'source_field', 'target_field', name='uix_project_source_target'),
+        UniqueConstraint('project_id', 'source_field', 'target_field', name='uix_mapping_unique_source_target'),
     )
     
     id = Column(Integer, primary_key=True, index=True)

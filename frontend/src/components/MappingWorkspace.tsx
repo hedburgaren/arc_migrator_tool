@@ -23,6 +23,11 @@ import './MappingWorkspace.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Available transform types for field mappings
+const TRANSFORM_TYPES: Array<'1:1' | 'concat' | 'constant' | 'lookup' | 'split' | 'custom'> = [
+  '1:1', 'concat', 'constant', 'lookup', 'split', 'custom'
+];
+
 interface MappingWorkspaceProps {
   projectId: number;
   sourceFileId: number;
@@ -292,13 +297,9 @@ function MappingWorkspaceContent({
     async (_event: React.MouseEvent, edge: Edge) => {
       if (!edge.data?.mappingId) return;
 
-      const transformTypes: Array<'1:1' | 'concat' | 'constant' | 'lookup' | 'split' | 'custom'> = [
-        '1:1', 'concat', 'constant', 'lookup', 'split', 'custom'
-      ];
-      
       const currentType = edge.data.transformType || '1:1';
-      const currentIndex = transformTypes.indexOf(currentType);
-      const nextType = transformTypes[(currentIndex + 1) % transformTypes.length];
+      const currentIndex = TRANSFORM_TYPES.indexOf(currentType);
+      const nextType = TRANSFORM_TYPES[(currentIndex + 1) % TRANSFORM_TYPES.length];
 
       try {
         setSaving(true);
@@ -336,7 +337,7 @@ function MappingWorkspaceContent({
         setSaving(false);
       }
     },
-    [edges]
+    [setEdges, setSaving, setError]
   );
 
   const handleClearAll = async () => {
