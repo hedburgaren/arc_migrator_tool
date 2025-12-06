@@ -10,6 +10,10 @@ export interface FileMetadata {
   file_type: string;
   upload_timestamp: string;
   status: string;
+  schema_analyzed: boolean;
+  column_count: number | null;
+  row_count: number | null;
+  encoding: string | null;
 }
 
 export interface FileUploadResponse {
