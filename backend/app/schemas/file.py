@@ -2,6 +2,7 @@
 Pydantic schemas for file operations.
 """
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -16,9 +17,9 @@ class FileResponse(BaseModel):
     upload_timestamp: datetime
     status: str
     schema_analyzed: bool = False
-    column_count: int | None = None
-    row_count: int | None = None
-    encoding: str | None = None
+    column_count: Optional[int] = None
+    row_count: Optional[int] = None
+    encoding: Optional[str] = None
     
     class Config:
         from_attributes = True

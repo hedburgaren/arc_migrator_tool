@@ -81,7 +81,7 @@ class SchemaAnalyzer:
                         df = pd.read_csv(file_path, encoding=fallback_encoding)
                         logger.info(f"Successfully read with fallback encoding: {fallback_encoding}")
                         return df, fallback_encoding
-                    except:
+                    except Exception:
                         continue
                 raise ValueError(f"Could not read CSV file with any supported encoding")
         
@@ -134,7 +134,7 @@ class SchemaAnalyzer:
             try:
                 pd.to_datetime(non_null.head(100))
                 return "date"
-            except:
+            except (ValueError, TypeError):
                 pass
             
             # Try to convert to numeric
@@ -144,7 +144,7 @@ class SchemaAnalyzer:
                     return "integer"
                 else:
                     return "float"
-            except:
+            except (ValueError, TypeError):
                 pass
             
             # Check if boolean-like

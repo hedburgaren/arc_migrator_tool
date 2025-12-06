@@ -119,7 +119,7 @@ export async function analyzeFileSchema(
 /**
  * Get schema for a file
  */
-export async function getFileSchema(fileId: number): Promise<any> {
+export async function getFileSchema(fileId: number): Promise<import('../types/schema').FileSchemaResponse> {
   const response = await fetch(`${API_BASE_URL}/api/files/${fileId}/schema`);
 
   if (!response.ok) {
