@@ -146,10 +146,11 @@ class CSVXLSXConnector(ConnectorBase):
         
         try:
             if output_format in {"csv", "txt"}:
+                quoting = self.config.get("csv_quoting", csv.QUOTE_MINIMAL)
                 if mode == "append" and output_path.exists():
-                    data.to_csv(output_path, mode="a", header=False, index=False)
+                    data.to_csv(output_path, mode="a", header=False, index=False, quoting=quoting)
                 else:
-                    data.to_csv(output_path, index=False, quoting=csv.QUOTE_ALL)
+                    data.to_csv(output_path, index=False, quoting=quoting)
             
             elif output_format in {"xlsx", "xls"}:
                 sheet_name = self.config.get("sheet_name", "Sheet1")

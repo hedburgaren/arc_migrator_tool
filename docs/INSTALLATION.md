@@ -25,7 +25,7 @@ The fastest way to get ARC Migrator running is with Docker Compose.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/arc_migrator_tool.git
+git clone https://github.com/hedburgaren/arc_migrator_tool.git
 cd arc_migrator_tool
 ```
 

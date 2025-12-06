@@ -477,10 +477,10 @@ ConnectorRegistry.register(ZohoConnector)
 | `/api/projects/{id}` | PUT | Update project |
 | `/api/projects/{id}` | DELETE | Delete project |
 | `/api/files/upload/{project_id}` | POST | Upload file |
-| `/api/files/project/{project_id}` | GET | List project files |
+| `/api/files/project/{project_id}` | GET | List files for project |
 | `/api/files/{id}/preview` | GET | Get file preview |
 | `/api/schemas/discover` | POST | Discover schema |
-| `/api/schemas/project/{project_id}` | GET | List schemas |
+| `/api/schemas/project/{project_id}` | GET | List schemas for project |
 | `/api/schemas/{id}` | GET | Get schema with fields |
 | `/api/mappings/project/{project_id}` | POST | Create mapping |
 | `/api/mappings/{id}` | GET | Get mapping with edges |

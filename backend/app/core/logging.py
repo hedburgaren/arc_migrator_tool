@@ -43,9 +43,14 @@ def setup_logging(
         root_logger.addHandler(file_handler)
     
     # Configure specific loggers
-    # Reduce noise from third-party libraries
-    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
-    logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+    # Reduce noise from third-party libraries in production
+    # These loggers are typically too verbose at INFO level
+    third_party_loggers = [
+        "uvicorn.access",
+        "sqlalchemy.engine",
+    ]
+    for logger_name in third_party_loggers:
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
     
     # Log startup message
     logger = logging.getLogger(__name__)
@@ -72,7 +77,3 @@ class LoggerMixin:
     def logger(self) -> logging.Logger:
         """Get logger for this class."""
         return logging.getLogger(self.__class__.__name__)
-
-
-# Default logging setup
-setup_logging()
