@@ -1,0 +1,109 @@
+.file-upload-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.file-upload-dropzone {
+  border: 2px dashed #cbd5e0;
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.file-upload-dropzone:hover {
+  border-color: #667eea;
+  background: #f8f9fa;
+}
+
+.file-upload-dropzone.dragging {
+  border-color: #667eea;
+  background: #eef2ff;
+  transform: scale(1.02);
+}
+
+.file-upload-dropzone.uploading {
+  border-color: #667eea;
+  background: #eef2ff;
+  cursor: wait;
+}
+
+.file-upload-dropzone.success {
+  border-color: #48bb78;
+  background: #f0fff4;
+}
+
+.file-upload-dropzone.error {
+  border-color: #f56565;
+  background: #fff5f5;
+}
+
+.upload-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.upload-icon.success {
+  color: #48bb78;
+  opacity: 1;
+}
+
+.upload-icon.error {
+  color: #f56565;
+  opacity: 1;
+}
+
+.upload-spinner {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.upload-text {
+  font-size: 1.125rem;
+  color: #4a5568;
+  margin: 0.5rem 0;
+}
+
+.upload-text strong {
+  color: #667eea;
+}
+
+.upload-text.success {
+  color: #48bb78;
+  font-weight: 500;
+}
+
+.upload-text.error {
+  color: #f56565;
+  font-weight: 500;
+}
+
+.upload-hint {
+  font-size: 0.875rem;
+  color: #a0aec0;
+  margin-top: 0.5rem;
+}
+
+.error-message {
+  font-size: 0.875rem;
+  color: #f56565;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(245, 101, 101, 0.1);
+  border-radius: 6px;
+  display: inline-block;
+}
