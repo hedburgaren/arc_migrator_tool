@@ -68,7 +68,7 @@ async def create_export(
     ]
     
     # Get source data (simplified - get most recent analyzed file)
-    db_file = db.query(File).filter(File.schema_analyzed == True).order_by(File.upload_timestamp.desc()).first()
+    db_file = db.query(File).filter(File.schema_analyzed.is_(True)).order_by(File.upload_timestamp.desc()).first()
     
     if not db_file:
         raise HTTPException(

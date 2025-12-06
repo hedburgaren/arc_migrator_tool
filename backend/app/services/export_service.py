@@ -164,8 +164,8 @@ class ExportService:
                 if not os.path.isfile(file_path):
                     continue
                 
-                # Check file age
-                file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
+                # Check file age (use UTC for consistent comparison)
+                file_mtime = datetime.utcfromtimestamp(os.path.getmtime(file_path))
                 
                 if file_mtime < cutoff_time:
                     try:

@@ -333,7 +333,7 @@ class TransformEngine:
                     'y': True, 'n': False
                 }
                 
-                return series.astype(str).str.lower().map(bool_map), errors
+                return series.astype(str).str.lower().map(bool_map).fillna(False), errors
             
             else:
                 errors.append({

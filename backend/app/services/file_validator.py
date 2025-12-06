@@ -160,7 +160,7 @@ class FileValidator:
             return issues
         
         # Check for empty column names
-        empty_cols = [col for col in df.columns if not str(col).strip() or str(col) == 'Unnamed']
+        empty_cols = [col for col in df.columns if not str(col).strip() or str(col).startswith('Unnamed')]
         if empty_cols:
             issues.append({
                 'severity': 'warning',
