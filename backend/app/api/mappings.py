@@ -38,6 +38,19 @@ async def create_mapping(
             detail=f"Project with id {project_id} not found"
         )
     
+    # Check for duplicate mapping (same source and target fields)
+    existing_mapping = db.query(Mapping).filter(
+        Mapping.project_id == project_id,
+        Mapping.source_field == mapping.source_field,
+        Mapping.target_field == mapping.target_field
+    ).first()
+    
+    if existing_mapping:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Mapping from '{mapping.source_field}' to '{mapping.target_field}' already exists"
+        )
+    
     db_mapping = Mapping(project_id=project_id, **mapping.model_dump())
     db.add(db_mapping)
     db.commit()

@@ -132,6 +132,34 @@ function MappingWorkspaceContent({
     }
   }, [nodes, loadMappings]);
 
+  // Validate connection: only allow source -> target connections
+  const isValidConnection = useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target) return false;
+
+      const sourceNode = nodes.find((n) => n.id === connection.source);
+      const targetNode = nodes.find((n) => n.id === connection.target);
+
+      if (!sourceNode || !targetNode) return false;
+
+      const sourceData = sourceNode.data as SchemaFieldNode;
+      const targetData = targetNode.data as SchemaFieldNode;
+
+      // Only allow source -> target connections (not source -> source or target -> target)
+      if (sourceData.side !== 'source' || targetData.side !== 'target') {
+        return false;
+      }
+
+      // Check if mapping already exists
+      const duplicateEdge = edges.find(
+        (edge) => edge.source === connection.source && edge.target === connection.target
+      );
+
+      return !duplicateEdge;
+    },
+    [nodes, edges]
+  );
+
   const onConnect = useCallback(
     async (connection: Connection) => {
       if (!connection.source || !connection.target) return;
@@ -143,6 +171,21 @@ function MappingWorkspaceContent({
 
       const sourceData = sourceNode.data as SchemaFieldNode;
       const targetData = targetNode.data as SchemaFieldNode;
+
+      // Validate connection type
+      if (sourceData.side !== 'source' || targetData.side !== 'target') {
+        setError('Invalid connection: You can only connect source fields to target fields');
+        return;
+      }
+
+      // Check for duplicate mapping in UI
+      const duplicateEdge = edges.find(
+        (edge) => edge.source === connection.source && edge.target === connection.target
+      );
+      if (duplicateEdge) {
+        setError(`Mapping already exists from "${sourceData.fieldName}" to "${targetData.fieldName}"`);
+        return;
+      }
 
       // Create mapping in backend
       try {
@@ -164,7 +207,8 @@ function MappingWorkspaceContent({
         });
 
         if (!response.ok) {
-          throw new Error('Failed to create mapping');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.detail || 'Failed to create mapping');
         }
 
         const savedMapping: MappingResponse = await response.json();
@@ -187,7 +231,7 @@ function MappingWorkspaceContent({
         setSaving(false);
       }
     },
-    [nodes, projectId]
+    [nodes, edges, projectId]
   );
 
   const onEdgesDelete = useCallback(
@@ -286,6 +330,7 @@ function MappingWorkspaceContent({
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgesDelete={onEdgesDelete}
+          isValidConnection={isValidConnection}
           nodeTypes={nodeTypes}
           fitView
           fitViewOptions={{ padding: 0.2 }}

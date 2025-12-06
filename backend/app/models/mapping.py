@@ -2,7 +2,7 @@
 Mapping model for storing field transformation mappings.
 """
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, JSON, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, JSON, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -11,6 +11,9 @@ class Mapping(Base):
     """Mapping model for tracking field transformations."""
     
     __tablename__ = "mappings"
+    __table_args__ = (
+        UniqueConstraint('project_id', 'source_field', 'target_field', name='uix_project_source_target'),
+    )
     
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False, index=True)
