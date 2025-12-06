@@ -114,7 +114,13 @@ function MappingWorkspaceContent({
             target: targetNode.id,
             type: 'default',
             animated: true,
-            data: { mappingId: mapping.id },
+            label: mapping.transform_type,
+            labelStyle: { fill: '#666', fontWeight: 500, fontSize: 12 },
+            labelBgStyle: { fill: '#fff', fillOpacity: 0.8 },
+            data: { 
+              mappingId: mapping.id,
+              transformType: mapping.transform_type,
+            },
           });
         }
       }
@@ -213,14 +219,20 @@ function MappingWorkspaceContent({
 
         const savedMapping: MappingResponse = await response.json();
 
-        // Add edge to the flow
+        // Add edge to the flow with label
         const newEdge: Edge = {
           id: `edge-${savedMapping.id}`,
           source: connection.source,
           target: connection.target,
           type: 'default',
           animated: true,
-          data: { mappingId: savedMapping.id },
+          label: savedMapping.transform_type,
+          labelStyle: { fill: '#666', fontWeight: 500, fontSize: 12 },
+          labelBgStyle: { fill: '#fff', fillOpacity: 0.8 },
+          data: { 
+            mappingId: savedMapping.id,
+            transformType: savedMapping.transform_type,
+          },
         };
 
         setEdges((eds) => addEdge(newEdge, eds));
@@ -360,7 +372,7 @@ function MappingWorkspaceContent({
           <span>Mappings: {edges.length}</span>
         </div>
         <div className="mapping-help">
-          💡 Drag from source field to target field to create a mapping
+          💡 Drag from a source field (left) to a target field (right) to create a mapping. Press Delete/Backspace to remove selected edges.
         </div>
       </div>
     </div>
