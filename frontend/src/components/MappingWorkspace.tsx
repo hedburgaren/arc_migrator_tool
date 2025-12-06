@@ -84,12 +84,9 @@ function MappingWorkspaceContent({
     setNodes([...sourceNodes, ...targetNodes]);
   }, [sourceSchema, targetSchema, sourceFileId, targetFileId]);
 
-  // Load existing mappings
-  useEffect(() => {
-    loadMappings();
-  }, [projectId]);
-
-  const loadMappings = async () => {
+  const loadMappings = useCallback(async () => {
+    if (nodes.length === 0) return; // Wait for nodes to be loaded
+    
     try {
       const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/mappings`);
       if (!response.ok) {
@@ -97,31 +94,43 @@ function MappingWorkspaceContent({
       }
       const mappings: MappingResponse[] = await response.json();
       
-      const loadedEdges: Edge[] = mappings.map((mapping) => ({
-        id: `edge-${mapping.id}`,
-        source: `source-${mapping.source_field}-*`,
-        target: `target-${mapping.target_field}-*`,
-        type: 'default',
-        animated: true,
-        data: { mappingId: mapping.id },
-      }));
+      // Match edges with actual node IDs using exact field name matching
+      const matchedEdges: Edge[] = [];
       
-      // Match edges with actual node IDs
-      const matchedEdges = loadedEdges.map(edge => {
-        const sourceNode = nodes.find(n => n.id.includes(edge.source.replace('-*', '')));
-        const targetNode = nodes.find(n => n.id.includes(edge.target.replace('-*', '')));
+      for (const mapping of mappings) {
+        const sourceNode = nodes.find(n => {
+          const data = n.data as SchemaFieldNode;
+          return data.side === 'source' && data.fieldName === mapping.source_field;
+        });
+        const targetNode = nodes.find(n => {
+          const data = n.data as SchemaFieldNode;
+          return data.side === 'target' && data.fieldName === mapping.target_field;
+        });
         
         if (sourceNode && targetNode) {
-          return { ...edge, source: sourceNode.id, target: targetNode.id };
+          matchedEdges.push({
+            id: `edge-${mapping.id}`,
+            source: sourceNode.id,
+            target: targetNode.id,
+            type: 'default',
+            animated: true,
+            data: { mappingId: mapping.id },
+          });
         }
-        return null;
-      }).filter((edge): edge is Edge => edge !== null);
+      }
       
       setEdges(matchedEdges);
     } catch (err) {
       console.error('Failed to load mappings:', err);
     }
-  };
+  }, [nodes, projectId]);
+
+  // Load existing mappings after nodes are loaded
+  useEffect(() => {
+    if (nodes.length > 0) {
+      loadMappings();
+    }
+  }, [nodes, loadMappings]);
 
   const onConnect = useCallback(
     async (connection: Connection) => {
