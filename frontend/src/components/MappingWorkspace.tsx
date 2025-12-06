@@ -23,6 +23,11 @@ import './MappingWorkspace.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Available transform types for field mappings
+const TRANSFORM_TYPES: Array<'1:1' | 'concat' | 'constant' | 'lookup' | 'split' | 'custom'> = [
+  '1:1', 'concat', 'constant', 'lookup', 'split', 'custom'
+];
+
 interface MappingWorkspaceProps {
   projectId: number;
   sourceFileId: number;
@@ -84,6 +89,10 @@ function MappingWorkspaceContent({
     setNodes([...sourceNodes, ...targetNodes]);
   }, [sourceSchema, targetSchema, sourceFileId, targetFileId]);
 
+  /**
+   * Load existing mappings from the database and create edges in the flow.
+   * This runs whenever nodes are loaded to restore saved mappings.
+   */
   const loadMappings = useCallback(async () => {
     if (nodes.length === 0) return; // Wait for nodes to be loaded
     
@@ -114,7 +123,13 @@ function MappingWorkspaceContent({
             target: targetNode.id,
             type: 'default',
             animated: true,
-            data: { mappingId: mapping.id },
+            label: mapping.transform_type,
+            labelStyle: { fill: '#666', fontWeight: 500, fontSize: 12 },
+            labelBgStyle: { fill: '#fff', fillOpacity: 0.8 },
+            data: { 
+              mappingId: mapping.id,
+              transformType: mapping.transform_type,
+            },
           });
         }
       }
@@ -132,6 +147,42 @@ function MappingWorkspaceContent({
     }
   }, [nodes, loadMappings]);
 
+  /**
+   * Validates connection attempts before they are created.
+   * Only allows source -> target connections and prevents duplicate mappings.
+   * This provides instant visual feedback to users when dragging connections.
+   */
+  const isValidConnection = useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target) return false;
+
+      const sourceNode = nodes.find((n) => n.id === connection.source);
+      const targetNode = nodes.find((n) => n.id === connection.target);
+
+      if (!sourceNode || !targetNode) return false;
+
+      const sourceData = sourceNode.data as SchemaFieldNode;
+      const targetData = targetNode.data as SchemaFieldNode;
+
+      // Only allow source -> target connections (not source -> source or target -> target)
+      if (sourceData.side !== 'source' || targetData.side !== 'target') {
+        return false;
+      }
+
+      // Check if mapping already exists
+      const duplicateEdge = edges.find(
+        (edge) => edge.source === connection.source && edge.target === connection.target
+      );
+
+      return !duplicateEdge;
+    },
+    [nodes, edges]
+  );
+
+  /**
+   * Handles edge creation when users drag from source to target field.
+   * Validates the connection, saves the mapping to the database, and creates the edge.
+   */
   const onConnect = useCallback(
     async (connection: Connection) => {
       if (!connection.source || !connection.target) return;
@@ -143,6 +194,21 @@ function MappingWorkspaceContent({
 
       const sourceData = sourceNode.data as SchemaFieldNode;
       const targetData = targetNode.data as SchemaFieldNode;
+
+      // Validate connection type
+      if (sourceData.side !== 'source' || targetData.side !== 'target') {
+        setError('Invalid connection: You can only connect source fields to target fields');
+        return;
+      }
+
+      // Check for duplicate mapping in UI
+      const duplicateEdge = edges.find(
+        (edge) => edge.source === connection.source && edge.target === connection.target
+      );
+      if (duplicateEdge) {
+        setError(`Mapping already exists from "${sourceData.fieldName}" to "${targetData.fieldName}"`);
+        return;
+      }
 
       // Create mapping in backend
       try {
@@ -164,19 +230,26 @@ function MappingWorkspaceContent({
         });
 
         if (!response.ok) {
-          throw new Error('Failed to create mapping');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.detail || 'Failed to create mapping');
         }
 
         const savedMapping: MappingResponse = await response.json();
 
-        // Add edge to the flow
+        // Add edge to the flow with label
         const newEdge: Edge = {
           id: `edge-${savedMapping.id}`,
           source: connection.source,
           target: connection.target,
           type: 'default',
           animated: true,
-          data: { mappingId: savedMapping.id },
+          label: savedMapping.transform_type,
+          labelStyle: { fill: '#666', fontWeight: 500, fontSize: 12 },
+          labelBgStyle: { fill: '#fff', fillOpacity: 0.8 },
+          data: { 
+            mappingId: savedMapping.id,
+            transformType: savedMapping.transform_type,
+          },
         };
 
         setEdges((eds) => addEdge(newEdge, eds));
@@ -187,9 +260,13 @@ function MappingWorkspaceContent({
         setSaving(false);
       }
     },
-    [nodes, projectId]
+    [nodes, edges, projectId]
   );
 
+  /**
+   * Handles edge deletion (when user presses Delete/Backspace on selected edges).
+   * Deletes the mapping from the database when an edge is removed.
+   */
   const onEdgesDelete = useCallback(
     async (deletedEdges: Edge[]) => {
       for (const edge of deletedEdges) {
@@ -209,6 +286,58 @@ function MappingWorkspaceContent({
       }
     },
     []
+  );
+
+  /**
+   * Handles edge clicks to cycle through transform types.
+   * Each click updates the mapping in the database and changes the edge label.
+   * Available types: 1:1 -> concat -> constant -> lookup -> split -> custom -> 1:1
+   */
+  const onEdgeClick = useCallback(
+    async (_event: React.MouseEvent, edge: Edge) => {
+      if (!edge.data?.mappingId) return;
+
+      const currentType = edge.data.transformType || '1:1';
+      const currentIndex = TRANSFORM_TYPES.indexOf(currentType);
+      const nextType = TRANSFORM_TYPES[(currentIndex + 1) % TRANSFORM_TYPES.length];
+
+      try {
+        setSaving(true);
+        setError('');
+
+        const response = await fetch(`${API_BASE_URL}/api/mappings/${edge.data.mappingId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ transform_type: nextType }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.detail || 'Failed to update mapping');
+        }
+
+        // Update edge in the flow
+        setEdges((eds) =>
+          eds.map((e) =>
+            e.id === edge.id
+              ? {
+                  ...e,
+                  label: nextType,
+                  data: { ...e.data, transformType: nextType },
+                }
+              : e
+          )
+        );
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update mapping');
+        console.error('Failed to update mapping:', err);
+      } finally {
+        setSaving(false);
+      }
+    },
+    [setEdges, setSaving, setError]
   );
 
   const handleClearAll = async () => {
@@ -286,6 +415,8 @@ function MappingWorkspaceContent({
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgesDelete={onEdgesDelete}
+          onEdgeClick={onEdgeClick}
+          isValidConnection={isValidConnection}
           nodeTypes={nodeTypes}
           fitView
           fitViewOptions={{ padding: 0.2 }}
@@ -315,7 +446,7 @@ function MappingWorkspaceContent({
           <span>Mappings: {edges.length}</span>
         </div>
         <div className="mapping-help">
-          💡 Drag from source field to target field to create a mapping
+          💡 Drag from a source field (left) to a target field (right) to create a mapping. Click an edge to cycle transform types. Press Delete/Backspace to remove selected edges.
         </div>
       </div>
     </div>
