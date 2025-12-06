@@ -2,47 +2,30 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    build: ./backend
     container_name: arc-migrator-backend-dev
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend/app:/app/app
-      - arc-data-dev:/app/data
     environment:
-      - DATABASE_URL=sqlite+aiosqlite:///./data/arc_migrator.db
-      - UPLOAD_DIR=./data/uploads
-      - OUTPUT_DIR=./data/outputs
-      - DEBUG=true
-      - CORS_ORIGINS=["http://localhost:5173","http://localhost:3000"]
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      - DATABASE_URL=sqlite:///./data/arc_migrator.db
+    volumes:
+      - ./backend:/app
+      - backend-data:/app/data
     restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
+    build: ./frontend
     container_name: arc-migrator-frontend-dev
     ports:
       - "5173:5173"
     volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/index.html:/app/index.html
-      - ./frontend/vite.config.ts:/app/vite.config.ts
-    environment:
-      - VITE_API_URL=http://localhost:8000
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
     restart: unless-stopped
+    command: npm run dev -- --host 0.0.0.0
 
 volumes:
-  arc-data-dev:
-    driver: local
+  backend-data:
