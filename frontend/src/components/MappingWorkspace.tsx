@@ -84,6 +84,10 @@ function MappingWorkspaceContent({
     setNodes([...sourceNodes, ...targetNodes]);
   }, [sourceSchema, targetSchema, sourceFileId, targetFileId]);
 
+  /**
+   * Load existing mappings from the database and create edges in the flow.
+   * This runs whenever nodes are loaded to restore saved mappings.
+   */
   const loadMappings = useCallback(async () => {
     if (nodes.length === 0) return; // Wait for nodes to be loaded
     
@@ -138,7 +142,11 @@ function MappingWorkspaceContent({
     }
   }, [nodes, loadMappings]);
 
-  // Validate connection: only allow source -> target connections
+  /**
+   * Validates connection attempts before they are created.
+   * Only allows source -> target connections and prevents duplicate mappings.
+   * This provides instant visual feedback to users when dragging connections.
+   */
   const isValidConnection = useCallback(
     (connection: Connection) => {
       if (!connection.source || !connection.target) return false;
@@ -166,6 +174,10 @@ function MappingWorkspaceContent({
     [nodes, edges]
   );
 
+  /**
+   * Handles edge creation when users drag from source to target field.
+   * Validates the connection, saves the mapping to the database, and creates the edge.
+   */
   const onConnect = useCallback(
     async (connection: Connection) => {
       if (!connection.source || !connection.target) return;
@@ -246,6 +258,10 @@ function MappingWorkspaceContent({
     [nodes, edges, projectId]
   );
 
+  /**
+   * Handles edge deletion (when user presses Delete/Backspace on selected edges).
+   * Deletes the mapping from the database when an edge is removed.
+   */
   const onEdgesDelete = useCallback(
     async (deletedEdges: Edge[]) => {
       for (const edge of deletedEdges) {
@@ -267,7 +283,11 @@ function MappingWorkspaceContent({
     []
   );
 
-  // Handle edge click to cycle through transform types
+  /**
+   * Handles edge clicks to cycle through transform types.
+   * Each click updates the mapping in the database and changes the edge label.
+   * Available types: 1:1 -> concat -> constant -> lookup -> split -> custom -> 1:1
+   */
   const onEdgeClick = useCallback(
     async (_event: React.MouseEvent, edge: Edge) => {
       if (!edge.data?.mappingId) return;

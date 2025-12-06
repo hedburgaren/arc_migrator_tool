@@ -22,13 +22,21 @@ async def create_mapping(
     """
     Create a new mapping for a project.
     
+    Validates that:
+    - The project exists
+    - No duplicate mapping exists for the same source->target field pair
+    
     Args:
         project_id: Project ID
-        mapping: Mapping data
+        mapping: Mapping data (source_field, target_field, transform_type, etc.)
         db: Database session
         
     Returns:
-        MappingResponse: Created mapping
+        MappingResponse: Created mapping with id and timestamps
+        
+    Raises:
+        404: Project not found
+        409: Duplicate mapping (same source and target fields already mapped)
     """
     # Check if project exists
     db_project = db.query(Project).filter(Project.id == project_id).first()
@@ -39,6 +47,7 @@ async def create_mapping(
         )
     
     # Check for duplicate mapping (same source and target fields)
+    # This prevents multiple mappings from the same source to the same target
     existing_mapping = db.query(Mapping).filter(
         Mapping.project_id == project_id,
         Mapping.source_field == mapping.source_field,
