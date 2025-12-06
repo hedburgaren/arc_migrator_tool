@@ -267,6 +267,58 @@ function MappingWorkspaceContent({
     []
   );
 
+  // Handle edge click to cycle through transform types
+  const onEdgeClick = useCallback(
+    async (_event: React.MouseEvent, edge: Edge) => {
+      if (!edge.data?.mappingId) return;
+
+      const transformTypes: Array<'1:1' | 'concat' | 'constant' | 'lookup' | 'split' | 'custom'> = [
+        '1:1', 'concat', 'constant', 'lookup', 'split', 'custom'
+      ];
+      
+      const currentType = edge.data.transformType || '1:1';
+      const currentIndex = transformTypes.indexOf(currentType);
+      const nextType = transformTypes[(currentIndex + 1) % transformTypes.length];
+
+      try {
+        setSaving(true);
+        setError('');
+
+        const response = await fetch(`${API_BASE_URL}/api/mappings/${edge.data.mappingId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ transform_type: nextType }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.detail || 'Failed to update mapping');
+        }
+
+        // Update edge in the flow
+        setEdges((eds) =>
+          eds.map((e) =>
+            e.id === edge.id
+              ? {
+                  ...e,
+                  label: nextType,
+                  data: { ...e.data, transformType: nextType },
+                }
+              : e
+          )
+        );
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update mapping');
+        console.error('Failed to update mapping:', err);
+      } finally {
+        setSaving(false);
+      }
+    },
+    [edges]
+  );
+
   const handleClearAll = async () => {
     if (!window.confirm('Are you sure you want to clear all mappings?')) {
       return;
@@ -342,6 +394,7 @@ function MappingWorkspaceContent({
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgesDelete={onEdgesDelete}
+          onEdgeClick={onEdgeClick}
           isValidConnection={isValidConnection}
           nodeTypes={nodeTypes}
           fitView
@@ -372,7 +425,7 @@ function MappingWorkspaceContent({
           <span>Mappings: {edges.length}</span>
         </div>
         <div className="mapping-help">
-          💡 Drag from a source field (left) to a target field (right) to create a mapping. Press Delete/Backspace to remove selected edges.
+          💡 Drag from a source field (left) to a target field (right) to create a mapping. Click an edge to cycle transform types. Press Delete/Backspace to remove selected edges.
         </div>
       </div>
     </div>
