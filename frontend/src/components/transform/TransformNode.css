@@ -1,0 +1,296 @@
+/* Transform Node Styles */
+
+.transform-node {
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 200px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.transform-node.selected {
+  border-color: #4CAF50;
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.transform-node:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Node Headers */
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.node-icon {
+  font-size: 20px;
+}
+
+.node-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Node Body */
+.node-body {
+  font-size: 13px;
+}
+
+.config-button {
+  width: 100%;
+  padding: 6px 12px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.config-button:hover {
+  background: #e0e0e0;
+}
+
+/* Config Panel */
+.config-panel {
+  margin-top: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.config-section {
+  margin-bottom: 12px;
+}
+
+.config-section label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #555;
+  font-size: 12px;
+}
+
+.config-section input,
+.config-section select,
+.config-section textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.config-section textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.config-info {
+  margin-top: 8px;
+  padding: 8px;
+  background: #f9f9f9;
+  border-radius: 4px;
+}
+
+.config-info small {
+  color: #666;
+  font-size: 11px;
+}
+
+/* Lookup Node Specific */
+.lookup-list {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.lookup-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #f9f9f9;
+  border-radius: 3px;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.lookup-key {
+  font-weight: 500;
+  color: #2196F3;
+}
+
+.lookup-arrow {
+  color: #999;
+}
+
+.lookup-value {
+  font-weight: 500;
+  color: #4CAF50;
+}
+
+.add-mapping {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.add-mapping input {
+  flex: 1;
+  min-width: 0;
+}
+
+.add-mapping button {
+  padding: 6px 12px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.add-mapping button:hover {
+  background: #45a049;
+}
+
+/* Conditional Node Specific */
+.condition-item {
+  background: #f9f9f9;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.condition-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.condition-config {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.condition-config select,
+.condition-config input {
+  flex: 1;
+  min-width: 60px;
+}
+
+.condition-config span {
+  color: #999;
+  font-weight: bold;
+}
+
+/* Buttons */
+.add-button {
+  width: 100%;
+  padding: 8px;
+  background: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.add-button:hover {
+  background: #1976D2;
+}
+
+.remove-button {
+  padding: 2px 8px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.remove-button:hover {
+  background: #d32f2f;
+}
+
+/* Warning */
+.warning {
+  display: block;
+  margin-top: 6px;
+  padding: 6px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  color: #856404;
+  font-size: 11px;
+}
+
+/* Node-specific colors */
+.lookup-node {
+  border-left: 4px solid #2196F3;
+}
+
+.conditional-node {
+  border-left: 4px solid #FF9800;
+}
+
+.math-node {
+  border-left: 4px solid #9C27B0;
+}
+
+.date-node {
+  border-left: 4px solid #00BCD4;
+}
+
+.string-node {
+  border-left: 4px solid #4CAF50;
+}
+
+.custom-node {
+  border-left: 4px solid #607D8B;
+}
+
+/* Scrollbar styling */
+.config-panel::-webkit-scrollbar,
+.lookup-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.config-panel::-webkit-scrollbar-track,
+.lookup-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.config-panel::-webkit-scrollbar-thumb,
+.lookup-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.config-panel::-webkit-scrollbar-thumb:hover,
+.lookup-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
