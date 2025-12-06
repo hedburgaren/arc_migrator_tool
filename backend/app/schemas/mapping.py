@@ -2,7 +2,7 @@
 Pydantic schemas for mapping operations.
 """
 from datetime import datetime
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, Literal
 from pydantic import BaseModel, Field
 
 
@@ -10,7 +10,7 @@ class MappingBase(BaseModel):
     """Base schema for mapping."""
     source_field: str = Field(..., min_length=1, max_length=255)
     target_field: str = Field(..., min_length=1, max_length=255)
-    transform_type: str = Field(default="1:1", max_length=50)
+    transform_type: Literal["1:1", "concat", "constant", "lookup", "split", "custom"] = Field(default="1:1")
     transform_config: Optional[Dict[str, Any]] = None
     validation_rules: Optional[Dict[str, Any]] = None
 
@@ -24,7 +24,7 @@ class MappingUpdate(BaseModel):
     """Schema for updating a mapping."""
     source_field: Optional[str] = Field(None, min_length=1, max_length=255)
     target_field: Optional[str] = Field(None, min_length=1, max_length=255)
-    transform_type: Optional[str] = Field(None, max_length=50)
+    transform_type: Optional[Literal["1:1", "concat", "constant", "lookup", "split", "custom"]] = None
     transform_config: Optional[Dict[str, Any]] = None
     validation_rules: Optional[Dict[str, Any]] = None
 

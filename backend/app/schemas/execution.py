@@ -2,14 +2,14 @@
 Pydantic schemas for execution operations.
 """
 from datetime import datetime
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, Literal
 from pydantic import BaseModel, Field
 
 
 class ExecutionBase(BaseModel):
     """Base schema for execution."""
-    execution_type: str = Field(..., max_length=50)
-    status: str = Field(default="pending", max_length=50)
+    execution_type: Literal["preview", "dry_run", "commit"] = Field(...)
+    status: Literal["pending", "running", "completed", "failed"] = Field(default="pending")
 
 
 class ExecutionCreate(ExecutionBase):
@@ -19,7 +19,7 @@ class ExecutionCreate(ExecutionBase):
 
 class ExecutionUpdate(BaseModel):
     """Schema for updating an execution."""
-    status: Optional[str] = Field(None, max_length=50)
+    status: Optional[Literal["pending", "running", "completed", "failed"]] = None
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     records_processed: Optional[int] = None

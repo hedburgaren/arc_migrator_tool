@@ -39,14 +39,6 @@ async def create_execution(
             detail=f"Project with id {project_id} not found"
         )
     
-    # Validate execution_type
-    valid_types = ["preview", "dry_run", "commit"]
-    if execution.execution_type not in valid_types:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid execution_type. Must be one of: {', '.join(valid_types)}"
-        )
-    
     db_execution = Execution(
         project_id=project_id,
         start_time=datetime.utcnow(),

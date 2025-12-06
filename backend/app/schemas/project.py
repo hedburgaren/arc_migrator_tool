@@ -2,7 +2,7 @@
 Pydantic schemas for project operations.
 """
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
 from pydantic import BaseModel, Field
 
 
@@ -12,7 +12,7 @@ class ProjectBase(BaseModel):
     description: Optional[str] = None
     source_system: Optional[str] = Field(None, max_length=100)
     target_system: Optional[str] = Field(None, max_length=100)
-    status: str = Field(default="draft", max_length=50)
+    status: Literal["draft", "active", "completed", "archived"] = Field(default="draft")
 
 
 class ProjectCreate(ProjectBase):
@@ -26,7 +26,7 @@ class ProjectUpdate(BaseModel):
     description: Optional[str] = None
     source_system: Optional[str] = Field(None, max_length=100)
     target_system: Optional[str] = Field(None, max_length=100)
-    status: Optional[str] = Field(None, max_length=50)
+    status: Optional[Literal["draft", "active", "completed", "archived"]] = None
 
 
 class ProjectResponse(ProjectBase):
