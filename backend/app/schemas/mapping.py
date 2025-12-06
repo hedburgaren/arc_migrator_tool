@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 class MappingBase(BaseModel):
     """Base schema for mapping."""
-    source_field: str = Field(..., min_length=1, max_length=255)
+    source_field: Optional[str] = Field(default=None, max_length=255)
     target_field: str = Field(..., min_length=1, max_length=255)
     transform_type: Literal["1:1", "concat", "constant", "lookup", "split", "custom"] = Field(default="1:1")
     transform_config: Optional[Dict[str, Any]] = None

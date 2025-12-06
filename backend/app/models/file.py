@@ -26,8 +26,9 @@ class File(Base):
     row_count = Column(Integer, nullable=True)
     encoding = Column(String, nullable=True)
     
-    # Relationship to schema
+    # Relationships
     schemas = relationship("Schema", back_populates="file", cascade="all, delete-orphan")
+    validation_reports = relationship("ValidationReport", back_populates="file", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<File(id={self.id}, filename='{self.filename}', status='{self.status}')>"

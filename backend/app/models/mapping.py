@@ -22,6 +22,7 @@ class Mapping(Base):
     transform_type = Column(String(50), default="1:1", nullable=False)
     transform_config = Column(JSON, nullable=True)
     validation_rules = Column(JSON, nullable=True)
+    validation_errors = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.utcnow(), nullable=False)
     updated_at = Column(DateTime, default=lambda: datetime.utcnow(), onupdate=lambda: datetime.utcnow(), nullable=False)
     

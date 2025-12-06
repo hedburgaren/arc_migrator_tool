@@ -32,6 +32,7 @@ class ProjectUpdate(BaseModel):
 class ProjectResponse(ProjectBase):
     """Schema for project response."""
     id: int
+    validation_status: str = Field(default="pending")
     created_at: datetime
     updated_at: datetime
     
