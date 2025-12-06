@@ -18,8 +18,12 @@ export async function uploadFile(file: File): Promise<FileUploadResponse> {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Failed to upload file');
+    try {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to upload file');
+    } catch (e) {
+      throw new Error('Failed to upload file');
+    }
   }
 
   return response.json();

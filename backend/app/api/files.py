@@ -187,7 +187,9 @@ async def delete_file(file_id: int, db: Session = Depends(get_db)):
             os.remove(db_file.file_path)
     except Exception as e:
         # Log error but continue with database deletion
-        print(f"Warning: Failed to delete file from disk: {e}")
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to delete file from disk: {e}")
     
     # Delete database record
     db.delete(db_file)

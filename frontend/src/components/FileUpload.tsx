@@ -19,7 +19,15 @@ export default function FileUpload({ onUploadSuccess }: FileUploadProps) {
   const handleFileUpload = async (file: File) => {
     // Validate file type
     const allowedExtensions = ['.csv', '.xlsx', '.xls'];
-    const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    const lastDotIndex = file.name.lastIndexOf('.');
+    
+    if (lastDotIndex === -1) {
+      setError('File must have an extension');
+      setStatus('error');
+      return;
+    }
+    
+    const fileExt = file.name.substring(lastDotIndex).toLowerCase();
     
     if (!allowedExtensions.includes(fileExt)) {
       setError(`Invalid file type. Allowed types: ${allowedExtensions.join(', ')}`);
