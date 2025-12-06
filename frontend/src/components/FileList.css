@@ -109,6 +109,37 @@
   color: #742a2a;
 }
 
+.file-schema-info {
+  color: #4299e1;
+  font-weight: 500;
+}
+
+.file-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.file-schema-btn {
+  padding: 0.5rem 1rem;
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.file-schema-btn:hover {
+  background: #3182ce;
+  transform: translateY(-1px);
+}
+
 .file-delete-btn {
   padding: 0.5rem 1rem;
   background: transparent;

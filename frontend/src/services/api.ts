@@ -88,3 +88,48 @@ export function formatDate(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleString();
 }
+
+/**
+ * Trigger schema analysis for a file
+ */
+export async function analyzeFileSchema(
+  fileId: number,
+  sampleSize: number = 5
+): Promise<{ message: string; file_id: number; row_count: number; column_count: number }> {
+  const response = await fetch(`${API_BASE_URL}/api/files/${fileId}/analyze`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ sample_size: sampleSize }),
+  });
+
+  if (!response.ok) {
+    try {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to analyze file schema');
+    } catch (e) {
+      throw new Error('Failed to analyze file schema');
+    }
+  }
+
+  return response.json();
+}
+
+/**
+ * Get schema for a file
+ */
+export async function getFileSchema(fileId: number): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/api/files/${fileId}/schema`);
+
+  if (!response.ok) {
+    try {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to fetch schema');
+    } catch (e) {
+      throw new Error('Failed to fetch schema');
+    }
+  }
+
+  return response.json();
+}
